@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 type Expense = {
   id: string;
@@ -16,7 +16,6 @@ const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'
 export default function Analytics({ expenses }: { expenses: Expense[] }) {
   const [isMounted, setIsMounted] = useState(false);
 
-  // ブラウザ（クライアント）側でマウントされるまでグラフの描画を待機
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -39,6 +38,10 @@ export default function Analytics({ expenses }: { expenses: Expense[] }) {
     }));
   }, [expenses]);
 
+  if (!isMounted) {
+    return <p className="text-center text-slate-500 py-12">読み込み中...</p>;
+  }
+
   return (
     <div className="space-y-6">
       {/* 今月の合計支出 */}
@@ -50,33 +53,27 @@ export default function Analytics({ expenses }: { expenses: Expense[] }) {
       </div>
 
       {/* カテゴリ別割合グラフ */}
-      <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md">
+      <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md flex flex-col items-center">
         <h3 className="text-lg font-bold text-slate-100 mb-4 text-center">カテゴリ別内訳</h3>
         
-        {!isMounted ? (
-          <p className="text-center text-slate-500 py-12">グラフを初期化中...</p>
-        ) : categoryData.length > 0 ? (
-          <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height={250}>
-              <PieChart>
-                <Pie
-                  data={categoryData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryData.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
+        {categoryData.length > 0 ? (
+          <PieChart width={300} height={260}>
+            <Pie
+              data={categoryData}
+              cx="50%"
+              cy="50%"
+              innerRadius={45}
+              outerRadius={75}
+              paddingAngle={5}
+              dataKey="value"
+            >
+              {categoryData.map((_, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value: number) => `¥${value.toLocaleString()}`} />
+            <Legend />
+          </PieChart>
         ) : (
           <p className="text-center text-slate-400 py-8">データがありません</p>
         )}
@@ -84,3 +81,4 @@ export default function Analytics({ expenses }: { expenses: Expense[] }) {
     </div>
   );
 }
+
