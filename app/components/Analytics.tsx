@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 type Expense = {
@@ -14,6 +14,13 @@ type Expense = {
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#6B7280'];
 
 export default function Analytics({ expenses }: { expenses: Expense[] }) {
+  const [isMounted, setIsMounted] = useState(false);
+
+  // ブラウザ（クライアント）側でマウントされるまでグラフの描画を待機
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   // 今月の合計金額
   const totalAmount = useMemo(() => {
     return expenses.reduce((sum, item) => sum + Number(item.amount), 0);
@@ -45,9 +52,12 @@ export default function Analytics({ expenses }: { expenses: Expense[] }) {
       {/* カテゴリ別割合グラフ */}
       <div className="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-md">
         <h3 className="text-lg font-bold text-slate-100 mb-4 text-center">カテゴリ別内訳</h3>
-        {categoryData.length > 0 ? (
+        
+        {!isMounted ? (
+          <p className="text-center text-slate-500 py-12">グラフを初期化中...</p>
+        ) : categoryData.length > 0 ? (
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={categoryData}
@@ -74,4 +84,3 @@ export default function Analytics({ expenses }: { expenses: Expense[] }) {
     </div>
   );
 }
-
