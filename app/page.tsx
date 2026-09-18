@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import Analytics from './components/Analytics';
+import dynamic from 'next/dynamic';
+
+// rechartsのSSRエラーを防ぐため動的インポート（ブラウザ側のみで実行）
+const Analytics = dynamic(() => import('./components/Analytics'), {
+  ssr: false,
+  loading: () => <p className="text-center text-slate-500 py-8">グラフを読み込み中...</p>,
+});
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
